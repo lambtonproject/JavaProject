@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://xmlns.jcp.org/xml/ns/javaee" xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd" id="WebApp_ID" version="3.1">
+
+    <display-name>eCommerceApp</display-name>
+	
+	<!-- Listeners-->
+	
+	<listener>
+		<listener-class>
+			com.ecommerce.listeners.ServletListeners
+		</listener-class>
+	</listener>
+	
+	<!-- Listeners-->
+	
+	
+	<!-- Servlet Context-->
+	
+	<context-param>
+		<param-name>sqlconn</param-name>
+		<param-value>jdbc:oracle:thin:commerce/062881@localhost:1521:xe</param-value>
+	</context-param>
+	
+	<!--  Servlet Context-->
+	
+	
+	<!-- ViewData Servlet-->
+	
+    <servlet>
+        <servlet-name>ViewData</servlet-name>
+        <servlet-class>com.ecommerce.servlets.ViewData</servlet-class>
+    </servlet>
+
+	    <servlet-mapping>
+	        <servlet-name>ViewData</servlet-name>
+	        <url-pattern>/ViewData</url-pattern>
+	    </servlet-mapping>
+	    
+    <!-- ViewData Servlet-->    
+      
+        
+    <!-- ManipulateData Servlet-->   
+     
+    <servlet>
+        <servlet-name>ManipulateData</servlet-name>
+        <servlet-class>com.ecommerce.servlets.ManipulateData</servlet-class>
+        
+        <init-param>
+        	<param-name>ServletManipulateDataParam</param-name>
+        	<param-value>oracle1</param-value>
+        </init-param>
+        
+    </servlet>
+    
+	    <servlet-mapping>
+	        <servlet-name>ManipulateData</servlet-name>
+	        <url-pattern>/ManipulateData</url-pattern>
+	    </servlet-mapping>
+   
+    <!-- ManipulateData Servlet--> 
+    
+    
+    <!-- Login Servlet--> 
+    
+    <servlet>
+        <servlet-name>Login</servlet-name>
+        <servlet-class>com.ecommerce.servlets.Login</servlet-class>
+        
+        <init-param>
+        	<param-name>ServletLoginParam</param-name>
+        	<param-value>oracle2</param-value>
+        </init-param>
+    </servlet>
+
+	    <servlet-mapping>
+	        <servlet-name>Login</servlet-name>
+	        <url-pattern>/login</url-pattern>
+	    </servlet-mapping>
+	
+	<!-- Login Servlet--> 
+	
+	
+	<!-- Startup Page-->
+	
+	<welcome-file-list>  
+		<welcome-file>index.htm</welcome-file>  
+	</welcome-file-list>  
+	
+	<!-- Startup Page-->
+	
+</web-app>
+
+
+

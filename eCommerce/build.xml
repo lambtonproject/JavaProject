@@ -11,7 +11,7 @@
 	
 	<target name="All" depends="Reset,Init,WebFiles,Compile,War">
 	</target>
-	
+	 
 	<target name="Reset" >
 		<delete dir="${release.dir}"></delete>
 		<mkdir dir="${release.dir}"/>
@@ -43,7 +43,7 @@
 	 		<fileset dir = "${classes.dir}" includes ="**"/>
 	 	</copy>
 	 
-	</target>
+	</target> 
 	
 	<target name="Compile" >
 		
@@ -54,14 +54,14 @@
 		</path>
 		
 		<javac srcdir="${java.src.dir}" includeantruntime="false" classpathref="my.class.path" destdir="${classes.dir}" debug="true">
-			<include name="*.java"/>
+			<include name="**/*.java"/>
 		</javac>
 		
-	</target>	
+	</target>	 
 	
 	<target name="War">
 		
-		<war destfile="./DiagonalServlet.war" webxml="${config.dir}/web.xml">
+		<war destfile="D:\Apache-Tomcat-8.5.16\webapps\ecommerce.war" webxml="${config.dir}/web.xml">
 			<fileset dir="${web.pages.dir}"/>
 			<classes dir="${classes.dir}"/>
 		  	<lib dir="${lib.dir}"/>

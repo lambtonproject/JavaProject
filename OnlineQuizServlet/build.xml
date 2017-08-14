@@ -1,0 +1,80 @@
+<?xml version="1.0"?>
+<project name="ECommerceServlets" default="All" basedir="." >
+	
+	<property name="java.src.dir" value = ".\src" />
+	<property name="web.pages.dir" value = ".\webpages" />
+	<property name="config.dir" value = ".\config" />
+	<property name="lib.dir"  value = ".\lib" />
+	<property name="classes.dir"  value = ".\classes" />
+	<property name="release.dir" value = ".\release"/>
+	
+	
+	<target name="All" depends="Reset,Init,WebFiles,Compile,War">
+	</target>
+	 
+	<target name="Reset" >
+		<delete dir="${release.dir}"></delete>
+		<mkdir dir="${release.dir}"/>
+	</target>
+	
+	<target name ="Init">
+
+	 	<mkdir dir="${release.dir}"/>
+
+	 	<mkdir dir="${release.dir}/WEB-INF"/>
+
+	 	<mkdir dir="${release.dir}/WEB-INF/classes"/>
+
+	 	<mkdir dir="${release.dir}/WEB-INF/lib"/>
+	 		
+	 </target>
+	
+	<target name ="WebFiles">
+
+	 	<copy todir= "${release.dir}">
+	 		<fileset dir = "${web.pages.dir}" includes ="**"/>
+	 	</copy>
+		<!--
+	 	<copy file = "${config.dir}/web.xml" todir = "${release.dir}/WEB-INF"/>
+
+	 	<copy file = "${config.dir}/weblogic.xml" todir = "${release.dir}/WEB-INF"/>
+		-->	
+	 	<copy todir="${release.dir}/WEB-INF/classes">
+	 		<fileset dir = "${classes.dir}" includes ="**"/>
+	 	</copy>
+	 
+	</target> 
+	
+	<target name="Compile" >
+		
+		<path id="my.class.path">
+			<fileset dir="${lib.dir}">
+				<include name="*.jar"/><!-- include all jars in this folder -->
+			</fileset>
+		</path>
+		
+		<javac srcdir="${java.src.dir}" includeantruntime="false" classpathref="my.class.path" destdir="${classes.dir}" debug="true">
+			<include name="**/*.java"/>
+		</javac>
+		
+	</target>	 
+	
+	<target name="War">
+		
+		<war destfile="D:\Apache-Tomcat-8.5.16\webapps/quiz.war" needxmlfile="false">
+			<fileset dir="${web.pages.dir}"/>
+			<classes dir="${classes.dir}"/>
+		  	<lib dir="${lib.dir}"/>
+			<!--<classes dir="${config.dir}" includes="weblogic.xml"/>-->
+		</war>	
+
+		<!--<war destfile="./quiz.war" webxml="${config.dir}/web.xml">
+			<fileset dir="${web.pages.dir}"/>
+			<classes dir="${classes.dir}"/>
+		  	<lib dir="${lib.dir}"/>
+			<classes dir="${config.dir}" includes="weblogic.xml"/>
+		</war>-->	
+
+	</target>
+	
+</project>
