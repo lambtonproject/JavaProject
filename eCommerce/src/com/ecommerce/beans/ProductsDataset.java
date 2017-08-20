@@ -1,6 +1,6 @@
 package com.ecommerce.beans;
 
-public class ProductsDataset {
+public class ProductsDataset implements Comparable<ProductsDataset> {
 	
 	private int PRODUCT_ID;
 	private String PRODUCT_NAME;
@@ -64,6 +64,15 @@ public class ProductsDataset {
 	
 	public void setPRODUCT_IMAGE(String PRODUCT_IMAGE) {	
 		this.PRODUCT_IMAGE = PRODUCT_IMAGE;	
+	}
+
+	@Override
+	public int compareTo(ProductsDataset ds) {
+
+//		return this.PRODUCT_ID - ds.PRODUCT_ID;    //Sorts the objects in ascending order
+        
+        return ds.PRODUCT_ID - this.PRODUCT_ID;    //Sorts the objects in descending order
+        
 	}	
 	
 }

@@ -1,6 +1,6 @@
 package com.ecommerce.beans;
 
-public class CustomersDataset {
+public class CustomersDataset implements Comparable<CustomersDataset> {
 
 	private int CUSTOMER_ID;
 	private String CUSTOMER_USERNAME;
@@ -91,6 +91,15 @@ public class CustomersDataset {
 	
 	public void setCUSTOMER_POSTALCODE(String CUSTOMER_POSTALCODE) {	
 		this.CUSTOMER_POSTALCODE = CUSTOMER_POSTALCODE;	
+	}
+
+	@Override
+	public int compareTo(CustomersDataset ds) {
+        
+//		return this.CUSTOMER_ID - ds.CUSTOMER_ID;    //Sorts the objects in ascending order
+        
+        return ds.CUSTOMER_ID - this.CUSTOMER_ID;    //Sorts the objects in descending order
+		
 	}		
 	
 }

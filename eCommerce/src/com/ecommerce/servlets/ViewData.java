@@ -19,6 +19,8 @@ import com.ecommerce.beans.OrdersDataset;
 import com.ecommerce.beans.ProductsDataset;
 import com.ecommerce.dbsql.DataProcess;
 
+import java.util.Collections;
+
 //@WebServlet("/ViewData")
 public class ViewData extends HttpServlet {
 
@@ -93,7 +95,9 @@ public class ViewData extends HttpServlet {
 				List<String> params = new ArrayList<String>();
 				
 				List<CustomersDataset> rs = dataProcess.selectData("select * from CUSTOMERS", params);  
-
+ 
+				Collections.sort(rs);
+				
 				out.println(HtmlCreator.createHtml("CustomersView", rs, req.getParameter("order") != null && req.getParameter("order").equals("active") ? "order" : ""));
 
 				req.getRequestDispatcher("footer.htm").include(req, resp);
@@ -110,7 +114,9 @@ public class ViewData extends HttpServlet {
 				List<String> params = new ArrayList<String>();
 				 
 				List<CustomersDataset> rs = dataProcess.selectData("select * from PRODUCTS", params);  
-
+				
+				Collections.sort(rs);
+				
 				out.println(HtmlCreator.createHtml("ProductsView", rs, req.getParameter("order") != null && req.getParameter("order").equals("active") ? req.getParameter("customerid") : ""));
 
 				req.getRequestDispatcher("footer.htm").include(req, resp);
@@ -129,7 +135,9 @@ public class ViewData extends HttpServlet {
 				List<OrdersDataset> rs = dataProcess.selectData("select * from  ORDERS o" + 
 						" inner join PRODUCTS p ON o.ORDER_PRODUCT_ID = p.PRODUCT_ID" + 
 						" inner join CUSTOMERS c ON o.ORDER_CUSTOMER_ID = c.CUSTOMER_ID", params);  
-
+				
+				Collections.sort(rs);
+				
 				out.println(HtmlCreator.createHtml("OrdersView", rs, ""));
 				
 				req.getRequestDispatcher("footer.htm").include(req, resp);
@@ -146,7 +154,9 @@ public class ViewData extends HttpServlet {
 				List<String> params = new ArrayList<String>();
 				
 				List<OrdersDataset> rs = dataProcess.selectData("select * from CATEGORIES", params);  
-	
+				
+				Collections.sort(rs);
+				
 				out.println(HtmlCreator.createHtml("CategoriesView", rs, ""));
 				
 				req.getRequestDispatcher("footer.htm").include(req, resp);

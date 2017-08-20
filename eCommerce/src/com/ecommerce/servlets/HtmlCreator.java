@@ -72,13 +72,16 @@ public class HtmlCreator {
 				     
 			     }
 
-
 		     }
-		     
-	    	 myvar.append("						<tr>\n")
-	    	 .append("							<td colspan=\"8\" height=\"100\" align=\"center\"><input type=\"submit\" id=\"addbutton\" class=\"btn btn-lg btn-default\" value=\"Add New Customer\"></td>\n")
-	    	 .append("						</tr>\n");
-	    	 
+
+    		 if (!action.equals("order")) {
+		    	 
+    			 myvar.append("						<tr>\n")
+		    	 .append("							<td colspan=\"8\" height=\"100\" align=\"center\"><input type=\"submit\" id=\"addbutton\" class=\"btn btn-lg btn-default\" value=\"Add New Customer\"></td>\n")
+		    	 .append("						</tr>\n");      	 
+		    	 
+		     }
+    		 
 			 myvar.append("					  </table>\n")
 				  .append("				  </div>\n")
 				  .append("			  </form>\n")
@@ -255,8 +258,7 @@ public class HtmlCreator {
 		    	 .append(String.format("							<td>%s</td>\n", ds.getPRODUCT_CATEGORY()))
 			     .append(String.format("							<td>%s</td>\n", ds.getPRODUCT_QUANTITY()))
 			     .append(String.format("							<td>%s</td>\n", ds.getPRODUCT_UNIT_PRICE()));
-			     
-			     
+
 	    		 if (!action.equals("")) {
 			    	 
 				     myvar.append(String.format("							<td><a href=\"ManipulateData?customerid=%s&productid=%s&process=new&module=orders\">Select</a></td>\n", action, ds.getPRODUCT_ID()))
@@ -268,15 +270,19 @@ public class HtmlCreator {
 			    	 myvar.append(String.format("							<td><a href=\"ManipulateData?id=%s&process=edit&module=products\">Edit</a></td>\n", ds.getPRODUCT_ID()))
 				     .append(String.format("							<td><a href=\"ManipulateData?id=%s&process=delete&module=products\">Delete</a></td>\n", ds.getPRODUCT_ID()))
 			    	 .append("						</tr>\n");
-				     
+			    	 
 			     }
    
 		     }
-		     
-	    	 myvar.append("						<tr>\n")
-	    	 .append("							<td colspan=\"9\" height=\"100\" align=\"center\"><input type=\"submit\" id=\"addbutton\" class=\"btn btn-lg btn-default\" value=\"Add New Product\"></td>\n")
-	    	 .append("						</tr>\n");
-	    	 
+
+    		 if (action.equals("")) {
+		    	 
+		    	 myvar.append("						<tr>\n")
+		    	 .append("							<td colspan=\"9\" height=\"100\" align=\"center\"><input type=\"submit\" id=\"addbutton\" class=\"btn btn-lg btn-default\" value=\"Add New Product\"></td>\n")
+		    	 .append("						</tr>\n");      	 
+		    	 
+		     }
+    		 
 			 myvar.append("					  </table>\n")
 				  .append("				  </div>\n")
 				  .append("			  </form>\n")
@@ -298,7 +304,7 @@ public class HtmlCreator {
 				     .append("	<div class=\"container\">\n")
 				     .append("		<div class=\"row\">\n")
 				     .append("			<div class=\"col-md-8 col-md-offset-2\">\n")
-				     .append(String.format("				<form action=\"ManipulateData?id=%s&process=update&module=products\" method=\"post\">\n", ds.getPRODUCT_ID()))
+				     .append(String.format("				<form action=\"ManipulateData?id=%s&process=update&module=products\" method=\"post\" enctype=\"multipart/form-data\">\n", ds.getPRODUCT_ID()))
 				     .append("				  <div class=\"well\">\n")
 				     .append("				  		<table width=\"100%\" border=\"1\" cellspacing=\"5\" cellpadding=\"5\">\n")
 				     .append("				  			<tr>\n")
@@ -316,17 +322,17 @@ public class HtmlCreator {
 				     .append("		  		      		  <td width=\"100\">Photo</td>\n")
 				     .append(String.format("		  		      		  <td><img src=\"img/%s\" height=\"100\" width=\"100\"/></td>\n", ds.getPRODUCT_IMAGE() == null ? "": ds.getPRODUCT_IMAGE()))
 				     .append("		  					  <td>Choose Photo</td>\n")
-				     .append(String.format("		  		      		  <td><input type=\"file\" name=\"PRODUCT_IMAGE\" id=\"PRODUCT_IMAGE\" value=\"%s\"></td>\n", ds.getPRODUCT_IMAGE() == null ? "": ds.getPRODUCT_IMAGE()))				     
+				     .append(String.format("		  		      		  <td><input type=\"file\" name=\"PRODUCT_IMAGE_FILE\" id=\"PRODUCT_IMAGE_FILE\"><input type=\"hidden\" name=\"PRODUCT_IMAGE\" id=\"PRODUCT_IMAGE\" value=\"%s\"></td>\n", ds.getPRODUCT_IMAGE() == null ? "": ds.getPRODUCT_IMAGE()))				     
 				     .append("			      		    </tr>\n")
 				     .append("			      		    <tr>\n")
 				     .append("		  		      		  <td>Category</td>\n")
-				     .append(String.format("		  		      		  <td colspan=\"3\"><input name=\"PRODUCT_CATEGORY\" type=\"text\" required id=\"PRODUCT_CATEGORY\" value=\"%s\"></td>\n", ds.getPRODUCT_CATEGORY() == null ? "": ds.getPRODUCT_CATEGORY()))
-				     .append("			      		    </tr>\n")
+				     .append(String.format("		  		      		  <td colspan=\"3\">%s</td>\n", action.replace("value=\"" + ds.getPRODUCT_CATEGORY() == null ? "": ds.getPRODUCT_CATEGORY() + "\"", "value=\"" + ds.getPRODUCT_CATEGORY() == null ? "": ds.getPRODUCT_CATEGORY() + "\" selected")))
+				     .append("			      		    </tr>\n") 
 				     .append("			      		    <tr>\n")
 				     .append("		  		      		  <td>Quantity</td>\n")
-				     .append(String.format("		  		      		  <td><input type=\"number\" name=\"PRODUCT_QUANTITY\" id=\"PRODUCT_QUANTITY\" value=\"%s\"></td>\n", ds.getPRODUCT_QUANTITY()))
+				     .append(String.format("		  		      		  <td><input type=\"number\" min=\"0\" name=\"PRODUCT_QUANTITY\" id=\"PRODUCT_QUANTITY\" value=\"%s\"></td>\n", ds.getPRODUCT_QUANTITY()))
 				     .append("		  		      		  <td>Unit Price</td>\n")
-				     .append(String.format("		  		      		  <td><input type=\"number\" name=\"PRODUCT_UNIT_PRICE\" id=\"PRODUCT_UNIT_PRICE\" value=\"%s\"></td>\n", ds.getPRODUCT_UNIT_PRICE()))
+				     .append(String.format("		  		      		  <td><input type=\"number\" min=\"0\" name=\"PRODUCT_UNIT_PRICE\" id=\"PRODUCT_UNIT_PRICE\" value=\"%s\"></td>\n", ds.getPRODUCT_UNIT_PRICE()))
 				     .append("			      		    </tr>\n")
 				     .append("			      		    <tr>\n")
 				     .append("		      		          <td>Description</td>\n")
@@ -356,7 +362,7 @@ public class HtmlCreator {
 			     .append("	<div class=\"container\">\n")
 			     .append("		<div class=\"row\">\n")
 			     .append("			<div class=\"col-md-8 col-md-offset-2\">\n")
-			     .append("				<form action=\"ManipulateData?process=add&module=products\" method=\"post\">\n")
+			     .append("				<form action=\"ManipulateData?process=add&module=products\" method=\"post\" enctype=\"multipart/form-data\">\n")
 			     .append("				  <div class=\"well\">\n")
 			     .append("				  		<table width=\"100%\" border=\"1\" cellspacing=\"5\" cellpadding=\"5\">\n")
 			     .append("				  			<tr>\n")
@@ -370,15 +376,15 @@ public class HtmlCreator {
 			     .append("			      		    </tr>\n")
 			     .append("			      		    <tr>\n")
 			     .append("		  		      		  <td>Category</td>\n")
-			     .append("		  		      		  <td><input name=\"PRODUCT_CATEGORY\" type=\"text\" required id=\"PRODUCT_CATEGORY\"></td>\n")
+			     .append(String.format("		  		      		  <td>%s</td>\n", action.replace("value=\"\"", "value=\"\" selected")))
 			     .append("		  					  <td>Choose Photo</td>\n")
 			     .append("		  		      		  <td><input type=\"file\" name=\"PRODUCT_IMAGE\" id=\"PRODUCT_IMAGE\"></td>\n")
 			     .append("			      		    </tr>\n")
 			     .append("			      		    <tr>\n")
 			     .append("		  		      		  <td>Quantity</td>\n")
-			     .append("		  		      		  <td><input type=\"number\" name=\"PRODUCT_QUANTITY\" id=\"PRODUCT_QUANTITY\" value=\"0\"></td>\n")
+			     .append("		  		      		  <td><input type=\"number\" min=\"0\" name=\"PRODUCT_QUANTITY\" id=\"PRODUCT_QUANTITY\" value=\"0\"></td>\n")
 			     .append("		  		      		  <td>Unit Price</td>\n")
-			     .append("		  		      		  <td><input type=\"number\" name=\"PRODUCT_UNIT_PRICE\" id=\"PRODUCT_UNIT_PRICE\" value=\"0.00\"></td>\n")
+			     .append("		  		      		  <td><input type=\"number\" min=\"0\" name=\"PRODUCT_UNIT_PRICE\" id=\"PRODUCT_UNIT_PRICE\" value=\"0.00\"></td>\n")
 			     .append("			      		    </tr>\n")
 			     .append("			      		    <tr>\n")
 			     .append("		      		          <td>Description</td>\n")
@@ -421,8 +427,8 @@ public class HtmlCreator {
 				     .append("						</tr>\n")
 				     .append("						<tr bgcolor=\"#E9FAE1\">\n")
 				     .append("							<td>ID</td>\n")
-				     .append("							<td>Product ID</td>\n")
-				     .append("							<td>Customer ID</td>\n") 
+				     .append("							<td>Product Name</td>\n")
+				     .append("							<td>Customer Name</td>\n") 
 				     .append("							<td>Quantity</td>\n")
 				     .append("							<td>Order Date</td>\n")
 				     .append("							<td>Total Price</td>\n")
@@ -436,8 +442,8 @@ public class HtmlCreator {
 
 			    	 myvar.append("						<tr>\n")
 			    	 .append(String.format("							<td>%s</td>\n", ds.getORDER_ID()))
-				     .append(String.format("							<td>%s</td>\n", ds.getORDER_PRODUCT_ID()))
-				     .append(String.format("							<td>%s</td>\n", ds.getORDER_CUSTOMER_ID()))
+				     .append(String.format("							<td>%s</td>\n", ds.getORDER_PRODUCT_NAME()))
+				     .append(String.format("							<td>%s</td>\n", ds.getORDER_CUSTOMER_NAME()))
 			    	 .append(String.format("							<td>%s</td>\n", ds.getORDER_QUANTITY()))
 				     .append(String.format("							<td>%s</td>\n", ds.getORDER_DATE()))
 				     .append(String.format("							<td>%s</td>\n", ds.getORDER_TOTAL()))
@@ -494,9 +500,9 @@ public class HtmlCreator {
 					     .append("			      		    </tr>\n")
 					     .append("			      		    <tr>\n")
 					     .append("		  		      		  <td>Quantity</td>\n")
-					     .append(String.format("		  		      		  <td><input type=\"number\" name=\"ORDER_QUANTITY\" id=\"ORDER_QUANTITY\" value=\"%s\"></td>\n", ds.getORDER_QUANTITY()))
+					     .append(String.format("		  		      		  <td><input type=\"number\" min=\"0\" name=\"ORDER_QUANTITY\" id=\"ORDER_QUANTITY\" value=\"%s\"></td>\n", ds.getORDER_QUANTITY()))
 					     .append("		  		      		  <td>Unit Price</td>\n")
-					     .append(String.format("		  		      		  <td><input type=\"number\" name=\"ORDER_TOTAL\" id=\"ORDER_TOTAL\" value=\"%s\"></td>\n", ds.getORDER_TOTAL()))
+					     .append(String.format("		  		      		  <td><input type=\"number\" min=\"0\" name=\"ORDER_TOTAL\" id=\"ORDER_TOTAL\" value=\"%s\"></td>\n", ds.getORDER_TOTAL()))
 					     .append("			      		    </tr>\n")
 					     .append("			      		    <tr>\n")
 					     .append("		      		          <td>Order Date</td>\n")
@@ -533,24 +539,24 @@ public class HtmlCreator {
 			     .append("		  		      		  <td colspan=\"4\" align=\"center\"><b>ORDERS NEW</b></td>\n")
 			     .append("				  			</tr>\n")			     
 			     .append("							<tr>\n")
-			     .append("		  				  	  <td width=\"100\">Product ID</td>\n")
-			     .append(String.format("		  		      		  <td colspan=\"3\"><input name=\"ORDER_PRODUCT_NAME\" type=\"text\" style=\"background-color:#EBEBE4\" readonly id=\"ORDER_PRODUCT_NAME\" value=\"%s\">\n", action.split(",")[1]))
-			     .append(String.format("		  		      		  <input name=\"ORDER_PRODUCT_ID\" type=\"hidden\" id=\"ORDER_PRODUCT_ID\" value=\"%s\"></td>\n", action.split(",")[1]))
+			     .append("		  				  	  <td width=\"100\">Product Name</td>\n")
+			     .append(String.format("		  		      		  <td colspan=\"3\"><input name=\"ORDER_PRODUCT_NAME\" type=\"text\" style=\"background-color:#EBEBE4\" readonly id=\"ORDER_PRODUCT_NAME\" value=\"%s\">\n", action.split("@@")[3]))
+			     .append(String.format("		  		      		  <input name=\"ORDER_PRODUCT_ID\" type=\"hidden\" id=\"ORDER_PRODUCT_ID\" value=\"%s\"></td>\n", action.split("@@")[2]))
 			     .append("			      		    </tr>\n")				     
 			     .append("			      		    <tr>\n")
-			     .append("		  		      		  <td>Customer ID</td>\n")
-			     .append(String.format("		  		      		  <td colspan=\"3\"><input name=\"ORDER_CUSTOMER_NAME\" type=\"text\" style=\"background-color:#EBEBE4\" readonly id=\"ORDER_CUSTOMER_NAME\" value=\"%s\">\n", action.split(",")[0]))
-			     .append(String.format("		  		      		  <input name=\"ORDER_CUSTOMER_ID\" type=\"hidden\" id=\"ORDER_CUSTOMER_ID\" value=\"%s\"></td>\n", action.split(",")[0]))
+			     .append("		  		      		  <td>Customer Name</td>\n")
+			     .append(String.format("		  		      		  <td colspan=\"3\"><input name=\"ORDER_CUSTOMER_NAME\" type=\"text\" style=\"background-color:#EBEBE4\" readonly id=\"ORDER_CUSTOMER_NAME\" value=\"%s\">\n", action.split("@@")[1]))
+			     .append(String.format("		  		      		  <input name=\"ORDER_CUSTOMER_ID\" type=\"hidden\" id=\"ORDER_CUSTOMER_ID\" value=\"%s\"></td>\n", action.split("@@")[0]))
 			     .append("			      		    </tr>\n")
 			     .append("			      		    <tr>\n")
 			     .append("		  		      		  <td>Quantity</td>\n")
-			     .append("		  		      		  <td><input type=\"number\" name=\"ORDER_QUANTITY\" id=\"ORDER_QUANTITY\" value=\"0\" autofocus required></td>\n")
+			     .append("		  		      		  <td><input type=\"number\" min=\"0\" name=\"ORDER_QUANTITY\" id=\"ORDER_QUANTITY\" value=\"0\" autofocus required></td>\n")
 			     .append("		  		      		  <td>Unit Price</td>\n")
-			     .append("		  		      		  <td><input type=\"number\" name=\"ORDER_TOTAL\" id=\"ORDER_TOTAL\" value=\"0.00\"></td>\n")
+			     .append("		  		      		  <td><input type=\"number\" min=\"0\" name=\"ORDER_TOTAL\" id=\"ORDER_TOTAL\" value=\"0.00\"></td>\n")
 			     .append("			      		    </tr>\n")
 			     .append("			      		    <tr>\n")
 			     .append("		      		          <td>Order Date</td>\n")
-			     .append("		      		          <td colspan=\"3\"><input type=\"date\" name=\"ORDER_DATE\" id=\"ORDER_DATE\"></td>\n")
+			     .append("		      		          <td colspan=\"3\"><input type=\"date\" name=\"ORDER_DATE\" id=\"ORDER_DATE\" required></td>\n")
 			     .append("			      		    </tr>\n")
 			     .append("			      		    <tr>\n")
 			     .append("		      		          <td colspan=\"4\">&nbsp;</td>\n")

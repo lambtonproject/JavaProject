@@ -1,6 +1,6 @@
 package com.ecommerce.beans;
 
-public class UsersDataset {
+public class UsersDataset implements Comparable<UsersDataset> {
 
 	private int USER_ID;
 	private String USER_USERNAME;
@@ -37,6 +37,15 @@ public class UsersDataset {
 	
 	public void setUSER_SCREENNAME(String USER_SCREENNAME) {	
 		this.USER_SCREENNAME = USER_PASSWORD;	
+	}
+
+	@Override
+	public int compareTo(UsersDataset ds) {
+
+//		return this.USER_ID - ds.USER_ID;    //Sorts the objects in ascending order
+        
+        return ds.USER_ID - this.USER_ID;    //Sorts the objects in descending order
+        
 	}			
 	
 }

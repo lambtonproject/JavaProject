@@ -2,7 +2,7 @@ package com.ecommerce.beans;
 
 import java.util.Date;
 
-public class OrdersDataset {
+public class OrdersDataset implements Comparable<OrdersDataset> {
 
 	private int ORDER_ID;
 	private int ORDER_PRODUCT_ID;
@@ -75,6 +75,15 @@ public class OrdersDataset {
 	
 	public void setORDER_TOTAL(float ORDER_TOTAL) {	
 		this.ORDER_TOTAL = ORDER_TOTAL;	
+	}
+
+	@Override
+	public int compareTo(OrdersDataset ds) {
+		
+//		return this.ORDER_ID - ds.ORDER_ID;    //Sorts the objects in ascending order
+        
+        return ds.ORDER_ID - this.ORDER_ID;    //Sorts the objects in descending order
+        
 	}		
 	
 }

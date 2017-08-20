@@ -1,5 +1,6 @@
 package com.ecommerce.servlets;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.ParseException;
@@ -16,6 +17,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.fileupload.FileUploadException;
+import org.apache.commons.fileupload.disk.DiskFileItemFactory;
+import org.apache.commons.fileupload.servlet.ServletFileUpload;
+
 import com.ecommerce.beans.CategoriesDataset;
 import com.ecommerce.beans.CustomersDataset;
 import com.ecommerce.beans.OrdersDataset;
@@ -31,7 +37,12 @@ public class ManipulateData extends HttpServlet {
 	
 	ServletConfig config;
 	ServletContext context;
-	
+
+	private boolean isMultipart;
+	private String filePath;
+	private int maxFileSize = 50 * 1024 * 1024;
+	private int maxMemSize = 4 * 1024 * 1024;
+	private File file ;
 	
 	@Override
 	public void init() throws ServletException {
@@ -39,24 +50,33 @@ public class ManipulateData extends HttpServlet {
 		config = getServletConfig();
 		context = getServletContext();
 		
+		filePath = config.getInitParameter("file-upload");
+		
 	}
-	
 	
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 
-		doManipulate(req, resp);
+		try {
+			doManipulate(req, resp);
+		} catch (FileUploadException e) {
+			e.printStackTrace();
+		}
 		
 	}
 	
 	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		 
-		doManipulate(req, resp);
+		  
+		try { 
+			doManipulate(req, resp);
+		} catch (FileUploadException e) {
+			e.printStackTrace();
+		}
 		
 	}
 	
-	public void doManipulate(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+	public void doManipulate(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException, FileUploadException {
 
 		try {
 			 
@@ -204,12 +224,12 @@ public class ManipulateData extends HttpServlet {
 					List<Integer> params = new ArrayList<>();
 	
 					params.add(Integer.parseInt(req.getParameter("id")));
-					
+			
 					List<ProductsDataset> rs = dbp.selectData("select * from PRODUCTS where PRODUCT_ID = ?", params);  
 					
 					req.getRequestDispatcher("header.htm").include(req, resp);
 					
-					out.println(HtmlCreator.createHtml("ProductsEdit", rs, ""));
+					out.println(HtmlCreator.createHtml("ProductsEdit", rs, getCategories()));
 					
 					req.getRequestDispatcher("footer.htm").include(req, resp);
 				
@@ -227,14 +247,15 @@ public class ManipulateData extends HttpServlet {
 				//PRODUCT UPDATE
 				} else if (req.getParameter("process").equals("update")){
 
-					List<Object> params = new ArrayList<>();		
-					  
-					params.add(req.getParameter("PRODUCT_NAME"));
-					params.add(req.getParameter("PRODUCT_CATEGORY"));
-					params.add(Integer.parseInt(req.getParameter("PRODUCT_QUANTITY")));
-					params.add(Float.parseFloat(req.getParameter("PRODUCT_UNIT_PRICE")));
-					params.add(req.getParameter("PRODUCT_DESCRIPTION"));
-					params.add(req.getParameter("PRODUCT_IMAGE"));
+					List<Object> params = getEncodedFormValues(req, resp);		
+				
+//					params.add(req.getParameter("PRODUCT_NAME"));
+//					params.add(req.getParameter("PRODUCT_CATEGORY"));
+//					params.add(Integer.parseInt(req.getParameter("PRODUCT_QUANTITY")));
+//					params.add(Float.parseFloat(req.getParameter("PRODUCT_UNIT_PRICE")));
+//					params.add(req.getParameter("PRODUCT_DESCRIPTION"));
+//					params.add(req.getParameter("PRODUCT_IMAGE"));
+					
 					params.add(Integer.parseInt(req.getParameter("id")));
 	
 					int success = dbp.updateData("update PRODUCTS set PRODUCT_NAME=?, "
@@ -247,7 +268,7 @@ public class ManipulateData extends HttpServlet {
 							, params);   
 					
 					if (success != 0) {
-						
+
 						resp.sendRedirect("ViewData?module=products");
 					
 					} else {
@@ -263,21 +284,21 @@ public class ManipulateData extends HttpServlet {
 					
 					req.getRequestDispatcher("header.htm").include(req, resp);
 					
-					out.println(HtmlCreator.createHtml("ProductsNew", params, ""));
+					out.println(HtmlCreator.createHtml("ProductsNew", params, getCategories()));
 					
 					req.getRequestDispatcher("footer.htm").include(req, resp);
 					
 				//PRODUCT INSERT
 				} else if (req.getParameter("process").equals("add")){
 					
-					List<Object> params = new ArrayList<>();
+					List<Object> params = getEncodedFormValues(req, resp);
 	
-					params.add(req.getParameter("PRODUCT_NAME"));
-					params.add(req.getParameter("PRODUCT_CATEGORY"));
-					params.add(Integer.parseInt(req.getParameter("PRODUCT_QUANTITY")));
-					params.add(Float.parseFloat(req.getParameter("PRODUCT_UNIT_PRICE")));
-					params.add(req.getParameter("PRODUCT_DESCRIPTION"));
-					params.add(req.getParameter("PRODUCT_IMAGE"));
+//					params.add(req.getParameter("PRODUCT_NAME"));
+//					params.add(req.getParameter("PRODUCT_CATEGORY"));
+//					params.add(Integer.parseInt(req.getParameter("PRODUCT_QUANTITY")));
+//					params.add(Float.parseFloat(req.getParameter("PRODUCT_UNIT_PRICE")));
+//					params.add(req.getParameter("PRODUCT_DESCRIPTION"));
+//					params.add(req.getParameter("PRODUCT_IMAGE"));
 					
 					dbp.insertData("insert into PRODUCTS ("
 							+ "PRODUCT_NAME, "
@@ -368,12 +389,13 @@ public class ManipulateData extends HttpServlet {
 					
 					String customerName = "", productName = "";
 						
+					DataProcess<CustomersDataset> dbCustomer = new DataProcess<CustomersDataset>(new CustomersDataset(), context);
 					
 					List<Integer> paramsInfo = new ArrayList<>();
 					
 					paramsInfo.add(Integer.parseInt(req.getParameter("customerid")));
 					
-					List<CustomersDataset> rsCustomer = dbp.selectData("select * from CUSTOMERS where CUSTOMER_ID = ?", paramsInfo);  
+					List<CustomersDataset> rsCustomer = dbCustomer.selectData("select * from CUSTOMERS where CUSTOMER_ID = ?", paramsInfo);  
 					
 					Iterator<CustomersDataset> sqlParamCustomer =  rsCustomer.iterator();
 					
@@ -390,9 +412,11 @@ public class ManipulateData extends HttpServlet {
 					 
 					paramsInfo.clear();
 					
+					DataProcess<ProductsDataset> dbProduct = new DataProcess<ProductsDataset>(new ProductsDataset(), context);
+					
 					paramsInfo.add(Integer.parseInt(req.getParameter("productid")));
 					
-					List<ProductsDataset> rsProduct = dbp.selectData("select * from PRODUCTS where PRODUCT_ID = ?", paramsInfo);  
+					List<ProductsDataset> rsProduct = dbProduct.selectData("select * from PRODUCTS where PRODUCT_ID = ?", paramsInfo);  
 					
 					Iterator<ProductsDataset> sqlParamProduct =  rsProduct.iterator();
 					
@@ -402,7 +426,7 @@ public class ManipulateData extends HttpServlet {
 						 
 						dsProduct =  (ProductsDataset) sqlParamProduct.next();
 							 
-						customerName = dsProduct.getPRODUCT_NAME();
+						productName = dsProduct.getPRODUCT_NAME();
 						 
 					}		    
 
@@ -411,7 +435,7 @@ public class ManipulateData extends HttpServlet {
 					
 					req.getRequestDispatcher("header.htm").include(req, resp);
 					
-					out.println(HtmlCreator.createHtml("OrdersNew", params, customerName + ","  + productName));
+					out.println(HtmlCreator.createHtml("OrdersNew", params, req.getParameter("customerid") + "@@" + customerName + "@@" + req.getParameter("productid") + "@@" + productName));
 					
 					req.getRequestDispatcher("footer.htm").include(req, resp);
 					
@@ -431,7 +455,7 @@ public class ManipulateData extends HttpServlet {
 					dbp.insertData("insert into ORDERS ("
 							+ "ORDER_PRODUCT_ID, "
 							+ "ORDER_CUSTOMER_ID, "
-							+ "ORDER_QUANTITY, "
+							+ "ORDER_QUANTITY, " 
 							+ "ORDER_DATE, "
 							+ "ORDER_TOTAL"
 							+ ") VALUES (?, ?, ?, ?, ?)", params); 
@@ -533,5 +557,132 @@ public class ManipulateData extends HttpServlet {
 		}
 		
 	}
+	
+	public String getCategories() {
+		
+		List<?> params = new ArrayList<>();
+		
+		DataProcess<CategoriesDataset> dbCategory = new DataProcess<CategoriesDataset>(new CategoriesDataset(), context);
+		
+		List<CategoriesDataset> rsCategories = dbCategory.selectData("select * from CATEGORIES", params);
+		
+		Iterator<CategoriesDataset> sqlParamCategory =  rsCategories.iterator();
+		
+		CategoriesDataset dsCategories = null;
+		
+		String catHtml = "";
+		
+		catHtml += "<select name=\"PRODUCT_CATEGORY\" id=\"PRODUCT_CATEGORY\" required>"
+				+ "<option value=\"\"></option>";
+		
+		while (sqlParamCategory.hasNext()) {
+			 
+			dsCategories =  (CategoriesDataset) sqlParamCategory.next();
+					
+			catHtml += "<option value=\"" + dsCategories.getCATEGORY_NAME() + "\">" + dsCategories.getCATEGORY_NAME() + "</option>";
+			 
+		}
+		
+		catHtml += "</select>";	
+		
+		return catHtml;
+		
+	}
+	
+	List<Object> getEncodedFormValues(HttpServletRequest req, HttpServletResponse resp) throws FileUploadException{
 
+		// Check that we have a file upload request
+		isMultipart = ServletFileUpload.isMultipartContent(req);
+		  
+		resp.setContentType("text/html");
+		   
+		if( !isMultipart ) {
+			return null;
+		}
+
+		DiskFileItemFactory factory = new DiskFileItemFactory();
+		
+		// maximum size that will be stored in memory
+		factory.setSizeThreshold(maxMemSize);
+		   
+		// Location to save data that is larger than maxMemSize.
+		factory.setRepository(new File("c:\\temp"));
+		
+		// Create a new file upload handler
+		ServletFileUpload upload = new ServletFileUpload(factory);
+		   
+		// maximum file size to be uploaded.
+		upload.setSizeMax( maxFileSize );
+		
+		// Parse the request to get file items.
+		List<FileItem> fileItems = upload.parseRequest(req);
+         
+    
+    	List<Object> params = new ArrayList<>();	
+    
+        String fieldPRODUCT_NAME = "", fieldPRODUCT_CATEGORY = "", fieldPRODUCT_DESCRIPTION = "", fieldPRODUCT_IMAGE = "";
+        int fieldPRODUCT_QUANTITY = 0;
+        float fieldPRODUCT_UNIT_PRICE = 0;
+        
+        String fieldname = "";
+        String fieldvalue = "";
+        
+        String fileName = "";
+
+		for (FileItem item : fileItems) {
+			
+		    // processes only fields that are form fields
+		    if (item.isFormField()) {
+
+		        fieldname = item.getFieldName();
+		        fieldvalue = item.getString();
+		        
+		        if (fieldname.equals("PRODUCT_NAME")) {
+		        	fieldPRODUCT_NAME = fieldvalue;
+		        } else if (fieldname.equals("PRODUCT_CATEGORY")) {
+		        	fieldPRODUCT_CATEGORY = fieldvalue;
+		        } else if (fieldname.equals("PRODUCT_QUANTITY")) {
+		        	fieldPRODUCT_QUANTITY = Integer.parseInt(fieldvalue);
+		        } else if (fieldname.equals("PRODUCT_UNIT_PRICE")) {
+		        	fieldPRODUCT_UNIT_PRICE = Float.parseFloat(fieldvalue);
+		        } else if (fieldname.equals("PRODUCT_DESCRIPTION")) {
+		        	fieldPRODUCT_DESCRIPTION = fieldvalue;
+		        } else if (fieldname.equals("PRODUCT_IMAGE")) {
+		        	fieldPRODUCT_IMAGE = fieldvalue;
+		        }
+		        
+		    } else if (!item.isFormField()) {
+		    	
+		    	// processes only fields that are not form fields
+		    	
+				fileName = item.getName();
+				
+				// Write the file
+				if( fileName.lastIndexOf("\\") >= 0 ) {
+					file = new File( filePath + fileName.substring( fileName.lastIndexOf("\\"))) ;
+				} else {
+					file = new File( filePath + fileName.substring(fileName.lastIndexOf("\\")+1)) ;
+				}	
+				   
+				try {
+					item.write( file ) ;
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			    	
+		    }
+
+		}
+
+		params.add(fieldPRODUCT_NAME);
+		params.add(fieldPRODUCT_CATEGORY);
+		params.add(fieldPRODUCT_QUANTITY);
+		params.add(fieldPRODUCT_UNIT_PRICE);
+		params.add(fieldPRODUCT_DESCRIPTION);
+		params.add(fileName == "" ? fieldPRODUCT_IMAGE : fileName);
+
+		return params;
+	
+	}
+	
 }

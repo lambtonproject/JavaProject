@@ -1,0 +1,9 @@
+Under ORACLE DATABASE
+
+first of all, 
+
+create a user named COMMERCE 
+
+and give a password to it as 062881
+
+and then run export.sql file under this user

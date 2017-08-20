@@ -47,8 +47,8 @@
         <servlet-class>com.ecommerce.servlets.ManipulateData</servlet-class>
         
         <init-param>
-        	<param-name>ServletManipulateDataParam</param-name>
-        	<param-value>oracle1</param-value>
+        	<param-name>file-upload</param-name>
+        	<param-value>D:\Apache-Tomcat-8.5.16\webapps\ecommerce\img\</param-value>
         </init-param>
         
     </servlet>

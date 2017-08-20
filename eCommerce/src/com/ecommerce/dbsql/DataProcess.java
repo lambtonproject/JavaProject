@@ -211,7 +211,7 @@ public class DataProcess<K> implements DataExchange {
 	public int updateData(String sqlString, List<?> param) {
 
 		int success = 0;
-		
+
 		try {
 			 
 			conn = ServerConn.getConn(context);
@@ -232,6 +232,81 @@ public class DataProcess<K> implements DataExchange {
 			}
 
 			success = updateStat.executeUpdate();
+
+	        //ORDERS STOCK UPDATE///////////////////////////////////
+	        
+	        if (sqlString.contains(" ORDERS ")) {
+
+	        	Object stockAmount = null;
+	    		Object productid = null;
+	    		Object orderid = null;
+	    		Object newStockAmount = null;
+	
+	    		i = 0; //index of parameter
+	    		
+	    		Iterator<?> sqlParamProduct =  param.iterator();
+	    		
+				while (sqlParamProduct.hasNext()) {
+					 
+					if (i == 0) {	//first parameter
+					
+						productid = sqlParamProduct.next();
+					
+					} else if (i == 2) {	//second parameter
+
+						newStockAmount = sqlParamProduct.next();
+						
+					} else if (i == 5) {	//fifth parameter
+
+						orderid = sqlParamProduct.next();
+						
+					} else {
+						
+						sqlParamProduct.next();
+						
+					}
+					
+					i++;
+					
+				}
+				
+	    		DataProcess<OrdersDataset> dbOrder = new DataProcess<OrdersDataset>(new OrdersDataset(), context);
+
+	    		List<Object> params = new ArrayList<>();
+
+				params.add(orderid);
+				
+	    		List<OrdersDataset> rsOrders = dbOrder.selectData("select * from ORDERS o" + 
+	    				" inner join PRODUCTS p ON o.ORDER_PRODUCT_ID = p.PRODUCT_ID" + 
+	    				" inner join CUSTOMERS c ON o.ORDER_CUSTOMER_ID = c.CUSTOMER_ID" + 
+	    				" where ORDER_ID = ?", params);
+	    		
+	    		Iterator<OrdersDataset> sqlParamOrder =  rsOrders.iterator();
+	    		
+	    		OrdersDataset dsOrders = null;
+	    	
+
+	    		while (sqlParamOrder.hasNext()) {
+	    			 
+	    			dsOrders =  (OrdersDataset) sqlParamOrder.next();
+	    					
+	    			stockAmount = dsOrders.getORDER_QUANTITY();
+	    			 
+	    		}
+	    		
+	    		params.clear();
+
+				params.add(((int) stockAmount - (int) newStockAmount));
+				params.add((int) productid);
+
+	        	stockCalculate("update PRODUCTS set "
+	    				+ "PRODUCT_QUANTITY = PRODUCT_QUANTITY + ?"
+	    				+ " where PRODUCT_ID=?"							
+	    				, params, conn);
+       	
+	        }
+	        
+	        ////////////////////////////////////////////////////////
 	        
 	        conn.commit();
 	        
@@ -279,7 +354,48 @@ public class DataProcess<K> implements DataExchange {
 			 
 			conn = ServerConn.getConn(context);
 			conn.setAutoCommit(false);
-			
+
+	        //ORDERS STOCK UPDATE///////////////////////////////////
+	        
+	        if (sqlString.contains(" ORDERS ")) {
+
+	    		DataProcess<OrdersDataset> dbOrder = new DataProcess<OrdersDataset>(new OrdersDataset(), context);
+	    		
+	    		List<OrdersDataset> rsOrders = dbOrder.selectData("select * from ORDERS o" + 
+	    				" inner join PRODUCTS p ON o.ORDER_PRODUCT_ID = p.PRODUCT_ID" + 
+	    				" inner join CUSTOMERS c ON o.ORDER_CUSTOMER_ID = c.CUSTOMER_ID" + 
+	    				" where ORDER_ID = ?", param);
+	    		
+	    		Iterator<OrdersDataset> sqlParamOrder =  rsOrders.iterator();
+	    		
+	    		OrdersDataset dsOrders = null;
+	    		
+	    		int stockAmount = 0;
+	    		int productid = 0;
+
+	    		while (sqlParamOrder.hasNext()) {
+	    			 
+	    			dsOrders =  (OrdersDataset) sqlParamOrder.next();
+	    					
+	    			productid = dsOrders.getORDER_PRODUCT_ID();
+	    			stockAmount = dsOrders.getORDER_QUANTITY();
+	    			 
+	    		}
+	    		
+	    		List<Object> params = new ArrayList<>();
+
+				params.add(stockAmount);
+				params.add(productid);
+
+	        	stockCalculate("update PRODUCTS set "
+	    				+ "PRODUCT_QUANTITY = PRODUCT_QUANTITY + ?"
+	    				+ " where PRODUCT_ID=?"							
+	    				, params, conn);
+       	
+	        }
+	        
+	        ////////////////////////////////////////////////////////
+	        
 			PreparedStatement deleteStat = conn.prepareStatement(sqlString);
 			
 			int i = 1; //index of parameter
@@ -294,7 +410,7 @@ public class DataProcess<K> implements DataExchange {
 			}
 
 	        deleteStat.executeUpdate();
-	        
+    
 	        conn.commit();
 	        
 	        
@@ -346,7 +462,7 @@ public class DataProcess<K> implements DataExchange {
 			Iterator<?> sqlParam =  param.iterator();
 			
 			while (sqlParam.hasNext()) {
-				 
+				
 				insertStat.setObject(i, sqlParam.next());
 				i++;
 				
@@ -354,10 +470,26 @@ public class DataProcess<K> implements DataExchange {
 
 	        insertStat.executeUpdate();
 	        
+	        
+	        //ORDERS STOCK UPDATE///////////////////////////////////
+	        
+	        if (sqlString.contains(" ORDERS ")) {
+
+	        	stockCalculate("update PRODUCTS set "
+	    				+ "PRODUCT_QUANTITY = PRODUCT_QUANTITY - ?"
+	    				+ " where PRODUCT_ID=?"							
+	    				, param, conn);
+       	
+	        }
+	        
+	        ////////////////////////////////////////////////////////
+	        
 	        conn.commit();
 	        
 	        
 		} catch (ClassNotFoundException | SQLException e) {
+			
+			e.printStackTrace();
 			
 			try {
 				
@@ -367,8 +499,6 @@ public class DataProcess<K> implements DataExchange {
 
 				e1.printStackTrace();
 			}
-			
-			e.printStackTrace();
 			
 	    } finally {
 	    	
@@ -388,4 +518,90 @@ public class DataProcess<K> implements DataExchange {
 	
 	////////////////////////////////////////////////////////////////////////////////////////////////
 
+	
+	//STOCK UPDATE /////////////////////////////////////////////////////////////////////////////////
+	
+	public void stockCalculate(String sqlString, List<?> param, Connection conn) throws SQLException, ClassNotFoundException {
+
+		Iterator<?> sqlParamOrders =  param.iterator();
+		
+		Object productId = 0, productAmount = 0;
+		
+		int i = 0; //index of parameter
+		
+		//for each different arrays returned
+		if (param.size() > 2) {
+		
+			while (sqlParamOrders.hasNext()) {
+				
+				if (i == 0) { 	//first parameter
+	
+					productId = sqlParamOrders.next();
+				
+				} else if (i == 2) {	//third parameter
+	
+					productAmount = sqlParamOrders.next();
+					
+					break;
+				
+				} else {	
+	
+					sqlParamOrders.next();
+				
+				}
+	
+				i++;
+				
+			}
+		
+		} else {
+			
+			while (sqlParamOrders.hasNext()) {
+				
+				if (i == 0) {	//first parameter
+	
+					productAmount = sqlParamOrders.next();
+				
+				} else if (i == 1) {	//second parameter
+	
+					productId = sqlParamOrders.next();
+					
+					break;
+					 
+				} else {	
+	
+					sqlParamOrders.next();
+				
+				}
+	
+				i++;
+				
+			}		
+			
+		}
+		
+		List<Object> params = new ArrayList<>();	
+
+		params.add((int) productAmount);
+		params.add((int) productId); 
+
+		PreparedStatement updateStat = conn.prepareStatement(sqlString);
+		
+		i = 1; //index of parameter
+
+		Iterator<?> sqlParam =  params.iterator();
+		
+		while (sqlParam.hasNext()) {
+			 
+			updateStat.setObject(i, sqlParam.next());
+			i++;
+			
+		}
+		
+		updateStat.executeUpdate();
+	
+	}
+	
+	////////////////////////////////////////////////////////////////////////////////////////////////
+	
 }
